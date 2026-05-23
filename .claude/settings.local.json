@@ -14,7 +14,8 @@
       "Bash(sed:*)",
       "Read(./**)",
       "Write(./**)",
-      "Edit(./**)"
+      "Edit(./**)",
+      "Bash(python3 *)"
     ]
   }
 }

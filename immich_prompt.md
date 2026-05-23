@@ -4,7 +4,7 @@ Il mio archivio fotografico é organizzato in una gerarchia di cartelle a 2 live
 
 # Obiettivo
 
-Scrivi uno script Python che utilizzi la CLI di Immich aggiungere ciascuna fotografia presente in Immich nel relativo album. Se l'album non esiste ancora deve essere creato in questo modo:
+Scrivi uno script Python che utilizzi la CLI e API di Immich per aggiungere ciascuna fotografia presente in Immich nel relativo album. Se l'album non esiste ancora deve essere creato in questo modo:
 1 - recupera la lista di tutte le risorse (fotografie) da Immich con il relativo percorsa (posizione originale del file). Salva la lista in un file csv 
 2 - itera la lista su ciascuna risorsa e genera in nome dell'album di destinazione in modo deterministico. Inseriscilo nel csv
 3 - Se l'album esiste già aggiungi la foto all'album, altrimenti crea prima l'album e poi aggiungi la foto. Aggiorna il csv.
@@ -21,7 +21,3 @@ Scrivi uno script Python che utilizzi la CLI di Immich aggiungere ciascuna fotog
 3 - lo script deve tenere traccia dell'avanzamento di ciascuno step annotando i progressi in file csv localmente, in modo tale da poter interrompere o ricominciare l'esecuzione in tempi diversi senza dover ripetere operazioni già eseguite in precedenza.
 
 4 - il file csv dovrà avere una struttura simile a questa: `filename`, `path`, `album_name`, `album_id`, `album_is_generated`, `photo_is_added_to_abum`.
-
-
-
-
