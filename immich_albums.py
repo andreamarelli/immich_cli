@@ -56,6 +56,26 @@ CSV_FIELDS = [
 _YEAR_RE = re.compile(r"^\d{4}$")
 _MM_PREFIX_RE = re.compile(r"^\d{1,2}\s*-\s*(.+)$")
 
+# Special-case folder mappings. Each entry is (path-segment-sequence, album_name).
+# The sequence must appear as consecutive folder segments anywhere in the path.
+# Checked before the year-based rule and ignores year (album_year is "").
+# Longer sequences should come first so more specific matches win.
+PATH_OVERRIDES: list[tuple[tuple[str, ...], str]] = [
+    (("Case", "Badia"), "Badia"),
+    (("Case", "Ciliegio"), "Ciliegio"),
+    (("Case", "Remac"), "REMAC"),
+    (("Farmacia",), "Farmacia"),
+]
+
+
+def _match_override(parts: tuple[str, ...]) -> str | None:
+    for needle, album in PATH_OVERRIDES:
+        n = len(needle)
+        for i in range(len(parts) - n + 1):
+            if parts[i : i + n] == needle:
+                return album
+    return None
+
 
 def derive_album(path: str) -> tuple[str, str]:
     """Return (album_display_name, year) for a given asset path.
@@ -63,8 +83,14 @@ def derive_album(path: str) -> tuple[str, str]:
     Examples:
         /archive/2024/11 - Roma/x.jpg      -> ("Roma", "2024")
         /archive/2024/Varie/x.jpg          -> ("Varie 2024", "2024")
+        /archive/Farmacia/x.jpg            -> ("Farmacia", "")
+        /archive/Case/Badia/2024/x.jpg     -> ("Badia", "")
     """
     parts = Path(path).parts
+    override = _match_override(parts)
+    if override is not None:
+        return override, ""
+
     for i, part in enumerate(parts):
         if _YEAR_RE.match(part) and i + 1 < len(parts) - 1:
             year = part
