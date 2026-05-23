@@ -219,13 +219,20 @@ def step2_share(
         except requests.HTTPError as e:
             body = ""
             try:
-                body = e.response.text[:200]
+                body = e.response.text
             except Exception:
                 pass
-            row["error"] = f"{getattr(e.response, 'status_code', '?')}: {body}"
-            print(f"    ! failed {row['album_name']!r}: {row['error']}")
-            save_csv(rows)
-            continue
+            status = getattr(e.response, "status_code", None)
+            if status == 400 and "User already added" in body:
+                row["target_already_shared"] = "True"
+                row["share_added"] = "True"
+                row["error"] = ""
+                print(f"    = already shared {row['album_name']!r}; marking as done")
+            else:
+                row["error"] = f"{status}: {body[:200]}"
+                print(f"    ! failed {row['album_name']!r}: {row['error']}")
+                save_csv(rows)
+                continue
         processed += 1
         if processed % SAVE_EVERY == 0:
             save_csv(rows)
