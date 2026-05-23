@@ -15,7 +15,9 @@
       "Read(./**)",
       "Write(./**)",
       "Edit(./**)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/python -c \"import requests; print\\('requests', requests.__version__\\)\")"
     ]
   }
 }
