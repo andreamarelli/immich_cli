@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:code.europa.eu)",
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "Bash(grep *)",
+      "Bash(./export-slides.sh)",
+      "Bash(mv *)",
+      "Bash(bash *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)"
+    ]
+  }
+}
