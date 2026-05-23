@@ -10,8 +10,7 @@ Re-running picks up where the previous run stopped.
 Environment (.env next to this script, or shell):
     IMMICH_SERVER_URL
     IMMICH_API_KEY
-    IMMICH_SHARE_WITH_EMAIL    target user's email (preferred)
-    IMMICH_SHARE_WITH_USER_ID  alternative: target user UUID
+    IMMICH_SHARE_WITH_USER_ID  target user UUID
     IMMICH_SHARE_ROLE          "viewer" (default) or "editor"
 
 Usage:
@@ -60,11 +59,6 @@ class ImmichClient:
                 "Content-Type": "application/json",
             }
         )
-
-    def list_users(self) -> list[dict]:
-        r = self.session.get(f"{self.base_url}/api/users", timeout=60)
-        r.raise_for_status()
-        return r.json()
 
     def list_albums(self) -> list[dict]:
         r = self.session.get(f"{self.base_url}/api/albums", timeout=60)
@@ -121,20 +115,12 @@ def to_bool(value) -> bool:
 # --------------------------------------------------------------------------- #
 
 
-def resolve_target_user(client: ImmichClient) -> tuple[str, str]:
-    """Return (user_id, label) for the share target."""
+def resolve_target_user() -> str:
+    """Return the share target's user UUID from the environment."""
     user_id = os.environ.get("IMMICH_SHARE_WITH_USER_ID", "").strip()
-    email = os.environ.get("IMMICH_SHARE_WITH_EMAIL", "").strip()
-    if user_id:
-        return user_id, user_id
-    if not email:
-        raise SystemExit(
-            "set IMMICH_SHARE_WITH_EMAIL or IMMICH_SHARE_WITH_USER_ID in .env."
-        )
-    for u in client.list_users():
-        if u.get("email", "").lower() == email.lower():
-            return u["id"], email
-    raise SystemExit(f"no Immich user with email {email!r} found.")
+    if not user_id:
+        raise SystemExit("set IMMICH_SHARE_WITH_USER_ID in .env.")
+    return user_id
 
 
 def _shared_users_summary(album: dict) -> tuple[list[str], list[str]]:
@@ -281,8 +267,8 @@ def main() -> int:
         return 2
 
     client = ImmichClient(server, api_key)
-    target_id, target_label = resolve_target_user(client)
-    print(f"target user: {target_label} (id={target_id}); role={role}")
+    target_id = resolve_target_user()
+    print(f"target user id: {target_id}; role={role}")
 
     rows = load_csv()
     rows = step1_collect(client, target_id, rows)
