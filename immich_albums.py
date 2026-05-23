@@ -16,11 +16,12 @@ Environment:
     IMMICH_API_KEY      API key from the Immich web UI
 
 Usage:
-    python3 immich_albums.py
+    python3 immich_albums.py [--limit N]
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
 import os
 import re
@@ -198,8 +199,12 @@ def step1_collect(client: ImmichClient, rows: list[dict]) -> list[dict]:
     return collected
 
 
-def step2_assign(client: ImmichClient, rows: list[dict]) -> None:
+def step2_assign(
+    client: ImmichClient, rows: list[dict], limit: int | None = None
+) -> None:
     print("[2/2] creating albums and adding photos…")
+    if limit is not None:
+        print(f"    will stop after {limit} newly-added photo(s)")
 
     # Rebuild (name, year) -> album_id from prior runs.
     album_index: dict[tuple[str, str], str] = {}
@@ -223,9 +228,14 @@ def step2_assign(client: ImmichClient, rows: list[dict]) -> None:
     print(f"    {done}/{total} already added; processing the remaining {total - done}…")
 
     processed_since_save = 0
+    processed_this_run = 0
     for i, row in enumerate(rows):
         if to_bool(row["photo_is_added_to_album"]):
             continue
+        if limit is not None and processed_this_run >= limit:
+            save_csv(rows)
+            print(f"    reached --limit {limit}; stopping.")
+            return
 
         key = (row["album_name"], row["album_year"])
 
@@ -262,6 +272,7 @@ def step2_assign(client: ImmichClient, rows: list[dict]) -> None:
             continue
 
         processed_since_save += 1
+        processed_this_run += 1
         if processed_since_save >= SAVE_EVERY:
             save_csv(rows)
             processed_since_save = 0
@@ -276,7 +287,24 @@ def step2_assign(client: ImmichClient, rows: list[dict]) -> None:
 # --------------------------------------------------------------------------- #
 
 
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="stop after adding N photos to albums in this run (step 2 only).",
+    )
+    return parser.parse_args(argv)
+
+
 def main() -> int:
+    args = parse_args()
+    if args.limit is not None and args.limit <= 0:
+        print("error: --limit must be a positive integer.", file=sys.stderr)
+        return 2
+
     server = os.environ.get("IMMICH_SERVER_URL")
     api_key = os.environ.get("IMMICH_API_KEY")
     if not server or not api_key:
@@ -289,7 +317,7 @@ def main() -> int:
     client = ImmichClient(server, api_key)
     rows = load_csv()
     rows = step1_collect(client, rows)
-    step2_assign(client, rows)
+    step2_assign(client, rows, limit=args.limit)
     return 0
 
 
