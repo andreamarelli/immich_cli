@@ -1,11 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:code.europa.eu)",
-      "Bash(gh repo *)",
-      "Bash(gh api *)",
       "Bash(grep *)",
-      "Bash(./export-slides.sh)",
       "Bash(mv *)",
       "Bash(bash *)",
       "Bash(git add *)",
@@ -15,9 +11,8 @@
       "Read(./**)",
       "Write(./**)",
       "Edit(./**)",
-      "Bash(python3 *)",
-      "Bash(.venv/bin/pip install *)",
-      "Bash(.venv/bin/python -c \"import requests; print\\('requests', requests.__version__\\)\")"
+      "Bash(.venv/bin/pip:*)",
+      "Bash(.venv/bin/python:*)"
     ]
   }
 }

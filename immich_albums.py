@@ -11,7 +11,7 @@ The script is resumable: progress is persisted to immich_albums.csv after each
 album creation and every batch of asset assignments. Re-running picks up where
 it left off.
 
-Environment:
+Environment (set in shell or in a .env file next to this script):
     IMMICH_SERVER_URL   e.g. https://immich.example.com
     IMMICH_API_KEY      API key from the Immich web UI
 
@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Iterable
 
 import requests
+from dotenv import load_dotenv
 
 
 CSV_PATH = Path(__file__).resolve().parent / "immich_albums.csv"
@@ -305,11 +306,13 @@ def main() -> int:
         print("error: --limit must be a positive integer.", file=sys.stderr)
         return 2
 
+    load_dotenv(Path(__file__).resolve().parent / ".env")
     server = os.environ.get("IMMICH_SERVER_URL")
     api_key = os.environ.get("IMMICH_API_KEY")
     if not server or not api_key:
         print(
-            "error: set IMMICH_SERVER_URL and IMMICH_API_KEY in the environment.",
+            "error: set IMMICH_SERVER_URL and IMMICH_API_KEY in the environment "
+            "or in a .env file next to this script.",
             file=sys.stderr,
         )
         return 2
